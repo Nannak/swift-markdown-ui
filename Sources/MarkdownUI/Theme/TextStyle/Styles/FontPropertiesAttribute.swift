@@ -43,7 +43,15 @@ extension AttributedString {
       // preserves the system font's automatic emoji fallback chain.
       // Code / headings / emphasis still get explicit fonts since their
       // FontProperties differ from the default.
-      if fontProperties == FontProperties() {
+      // DIAGNOSTIC: log what's happening at runtime so Pulse can confirm
+      // whether the default-skip path is firing. Remove once verified.
+      let runText = String(output[run.range].characters)
+      let isDefault = (fontProperties == FontProperties())
+      let isEmojiRun = runText.unicodeScalars.contains(where: { $0.value > 0xFFFF })
+      if isEmojiRun || isDefault {
+        print("PULSE-MD run text=\(runText.prefix(40)) default=\(isDefault) emoji=\(isEmojiRun) props=size:\(fontProperties.size) family:\(fontProperties.family) weight:\(fontProperties.weight) variant:\(fontProperties.familyVariant)")
+      }
+      if isDefault {
         output[run.range].fontProperties = nil
         continue
       }
